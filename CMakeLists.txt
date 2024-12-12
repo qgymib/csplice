@@ -22,7 +22,9 @@ add_executable(${PROJECT_NAME}
     "src/function/__init__.c"
     "src/function/dirname.c"
     "src/function/openfile.c"
+    "src/function/readfile.c"
     "src/function/splitlines.c"
+    "src/utils/codenode.c"
     "src/utils/strerror.c"
     "src/main.c"
 )
