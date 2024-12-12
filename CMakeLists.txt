@@ -43,3 +43,9 @@ target_link_libraries(${PROJECT_NAME}
     PRIVATE
         liblua
 )
+
+add_subdirectory(third_party/cJSON)
+target_link_libraries(${PROJECT_NAME}
+    PRIVATE
+        cJSON
+)
