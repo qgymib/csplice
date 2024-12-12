@@ -6,6 +6,21 @@ typedef struct csplice_file
     FILE* handle;   /**< The file handle. */
 } csplice_file_t;
 
+#if !defined(_WIN32)
+
+#include <errno.h>
+
+static int fopen_s(FILE** ppFile, const char* filename, const char* mode)
+{
+    if ((*ppFile = fopen(filename, mode)) == NULL)
+    {
+        return errno;
+    }
+    return 0;
+}
+
+#endif
+
 static int _file_close(lua_State* L)
 {
     csplice_file_t* file = lua_touserdata(L, 1);
