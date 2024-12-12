@@ -2,5 +2,9 @@
 /build
 /build.*
 
+# Generated documents
+/docs/html
+/docs/latex
+
 # Visual studio code files
 /.vscode
