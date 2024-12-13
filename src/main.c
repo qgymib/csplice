@@ -64,6 +64,7 @@ typedef struct csplice_ctx
 
     char *ifile; /**< Input file. */
     char *ofile; /**< Output file. */
+    int   dump;  /**< Dump code tree. */
 
     code_node_t *root; /**< Root node of code tree. */
 } csplice_ctx_t;
@@ -86,6 +87,8 @@ CSPLICE_NAMESPACE " v" CSPLICE_VERSION_STRING " - Merge multiple C source files 
 "    Input file.\n"
 "  -o <ofile>\n"
 "    Output file.\n"
+"  -d, --dump\n"
+"    Dump code tree.\n"
 "  -h, --help\n"
 "    Print this help message and exit.\n"
 "  -v, --version\n"
@@ -146,6 +149,12 @@ static void _process_argc(lua_State *L)
             _G->ofile = strdup(argv[i + 1]);
             continue;
         }
+
+        if (strcmp(argv[i], "-d") == 0 || strcmp(argv[i], "--dump") == 0)
+        {
+            _G->dump = 1;
+            continue;
+        }
     }
 
     if (_G->ifile == NULL)
@@ -181,20 +190,46 @@ static int _build_code_tree(lua_State *L)
     int node_sz = cJSON_GetArraySize(json);
     for (i = 0; i < node_sz; i++)
     {
-        cJSON* obj = cJSON_GetArrayItem(json, i);
-        cJSON* j_file = cJSON_GetObjectItem(obj, "file");
+        cJSON *obj = cJSON_GetArrayItem(json, i);
+        cJSON *j_file = cJSON_GetObjectItem(obj, "file");
         if (j_file == NULL)
         {
             return luaL_error(L, "compile_commands.json is not valid.");
         }
 
-        const char* v_file = cJSON_GetStringValue(j_file);
+        const char *v_file = cJSON_GetStringValue(j_file);
         code_node_append_file(_G->root, v_file);
     }
 
     /* Restore stack. */
     lua_settop(L, sp);
     return 0;
+}
+
+static void _build_target_node(lua_State *L, code_node_t *node)
+{
+    size_t i;
+    if (node->type == CODE_NODE_TYPE_VIRT)
+    {
+        for (i = 0; i < node->child_sz; i++)
+        {
+            _build_target_node(L, node->childs[i]);
+        }
+        return;
+    }
+
+    if (node->type == CODE_NODE_TYPE_FILE)
+    {
+        csplice_get_function(L, "readfile");
+        lua_pushstring(L, node->data.str);
+        lua_call(L, 1, 1);
+
+        csplice_string_set_lstring(&node->data, L, -1);
+        node->type = CODE_NODE_TYPE_TEXT;
+        lua_pop(L, 1);
+
+        return;
+    }
 }
 
 /**
@@ -211,6 +246,7 @@ static int _pmain(lua_State *L)
     _process_argc(L);
 
     _build_code_tree(L);
+    _build_target_node(L, _G->root);
 
     return 0;
 }

@@ -26,6 +26,7 @@ add_executable(${PROJECT_NAME}
     "src/function/splitlines.c"
     "src/utils/codenode.c"
     "src/utils/log.c"
+    "src/utils/str.c"
     "src/utils/strerror.c"
     "src/main.c"
 )

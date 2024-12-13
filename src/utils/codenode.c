@@ -44,17 +44,13 @@ void code_node_delete(code_node_t *node)
     }
 
     /* Release this node. */
-    if (node->type == CODE_NODE_TYPE_FILE)
-    {
-        free(node->data.file.path);
-        node->data.file.path = NULL;
-    }
+    csplice_string_free(&node->data);
     free(node);
 }
 
 void code_node_append_file(code_node_t* node, const char* path)
 {
-    code_node_t* new_node = malloc(sizeof(code_node_t));
+    code_node_t* new_node = calloc(1, sizeof(code_node_t));
     if (new_node == NULL)
     {
         abort();
@@ -64,7 +60,7 @@ void code_node_append_file(code_node_t* node, const char* path)
     new_node->child_sz = 0;
     new_node->childs = NULL;
     new_node->type = CODE_NODE_TYPE_FILE;
-    new_node->data.file.path = strdup(path);
+    csplice_string_set_cstring(&new_node->data, path);
 
     code_node_t** new_childs = realloc(node->childs, sizeof(code_node_t *) * (node->child_sz + 1));
     if (new_childs == NULL)
