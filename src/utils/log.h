@@ -1,6 +1,8 @@
 #ifndef __CSPLICE_UTILS_LOG_H__
 #define __CSPLICE_UTILS_LOG_H__
 
+// clang-format off
+
 /**
  * @brief Debug logging.
  * @param[in] fmt Format string.
@@ -33,6 +35,8 @@
 #define LOG_E(fmt, ...) \
     csplice_log(CSPICE_LOG_LEVEL_ERROR, __FILE__, __func__, __LINE__, fmt, ##__VA_ARGS__)
 
+// clang-format on
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -57,8 +61,8 @@ typedef enum csplice_log_level
  * @param[in] fmt Format string.
  * @param[in] ... Variable arguments.
  */
-void csplice_log(csplice_log_level_t level, const char* file, const char* func,
-    int line, const char* fmt, ...);
+void csplice_log(csplice_log_level_t level, const char *file, const char *func,
+    int line, const char *fmt, ...);
 
 #ifdef __cplusplus
 }

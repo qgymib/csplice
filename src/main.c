@@ -179,7 +179,7 @@ static int _build_code_tree(lua_State *L)
     {
         return luaL_error(L, "failed to parse input file.");
     }
-    csplice_host(L, json, (csplice_host_gc)cJSON_Delete);
+    csplice_lua_host(L, json, (csplice_lua_gc_fn)cJSON_Delete);
 
     if (json->type != cJSON_Array)
     {
@@ -204,6 +204,32 @@ static int _build_code_tree(lua_State *L)
     /* Restore stack. */
     lua_settop(L, sp);
     return 0;
+}
+
+/**
+ * @brief Dump code tree as json.
+ * @param[out] json JSON object.
+ * @param[in] node Code tree.
+ */
+static void _dump_code_tree(cJSON* json, code_node_t* node)
+{
+    if (node->type == CODE_NODE_TYPE_VIRT)
+    {
+        cJSON* virt = cJSON_CreateArray();
+        cJSON_AddItemToObject(json, "virt", virt);
+        for (size_t i = 0; i < node->child_sz; i++)
+        {
+            _dump_code_tree(virt, node->childs[i]);
+        }
+        return;
+    }
+
+    static const char* types[] = { "virt", "file", "text", "code" };
+    const char* name = types[node->type];
+
+    cJSON* obj = cJSON_CreateObject();
+    cJSON_AddStringToObject(obj, name, node->data.str);
+    cJSON_AddItemToArray(json, obj);
 }
 
 static void _build_target_node(lua_State *L, code_node_t *node)
@@ -247,6 +273,16 @@ static int _pmain(lua_State *L)
 
     _build_code_tree(L);
     _build_target_node(L, _G->root);
+
+    if (_G->dump)
+    {
+        cJSON *json = cJSON_CreateObject();
+        _dump_code_tree(json, _G->root);
+        char* info = cJSON_Print(json);
+        cJSON_Delete(json);
+        printf("%s\n", info);
+        cJSON_free(info);
+    }
 
     return 0;
 }

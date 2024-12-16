@@ -1,4 +1,4 @@
-#include "utils/strerror.h"
+#include "utils/str.h"
 #include "__init__.h"
 
 typedef struct csplice_file

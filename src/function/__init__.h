@@ -4,9 +4,7 @@
 extern "C" {
 #endif
 
-#include <lua.h>
-#include <lauxlib.h>
-#include <lualib.h>
+#include "utils/luaext.h"
 
 /**
  * @brief Function information.
@@ -31,12 +29,6 @@ extern const csplice_function_t csplice_function_splitlines;
  */
 
 /**
- * @brief GC callback.
- * @param[in] obj Object.
- */
-typedef void (*csplice_host_gc)(void* obj);
-
-/**
  * @brief Register builtin functions.
  * @param[in] L Lua VM.
  * @return Always 0.
@@ -50,15 +42,6 @@ int csplice_openlibs(lua_State* L);
  * @return Always 1.
  */
 int csplice_get_function(lua_State* L, const char* name);
-
-/**
- * @brief Host object on Lua VM.
- * @param[in] L Lua VM.
- * @param[in] obj Object.
- * @param[in] cb GC callback.
- * @return Always 1.
- */
-int csplice_host(lua_State* L, void* obj, csplice_host_gc cb);
 
 #ifdef __cplusplus
 }

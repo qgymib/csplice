@@ -4,8 +4,12 @@
 extern "C" {
 #endif
 
-#include <lua.h>
+#include "luaext.h"
 
+/**
+ * @brief A string.
+ * The initial value of the string should be `{ NULL, 0 }`.
+ */
 typedef struct csplice_string
 {
     char  *str; /**< The string */
@@ -25,7 +29,7 @@ void csplice_string_set_lstring(csplice_string_t *str, lua_State *L, int idx);
  * @param[out] str String.
  * @param[in] s C string.
  */
-void csplice_string_set_cstring(csplice_string_t* str, const char* s);
+void csplice_string_set_cstring(csplice_string_t *str, const char *s);
 
 /**
  * @brief Sets a C string to a string.
@@ -33,11 +37,11 @@ void csplice_string_set_cstring(csplice_string_t* str, const char* s);
  * @param[in] s C string.
  * @param[in] len Length of the C string.
  */
-void csplice_string_set_cstring_len(csplice_string_t* str, const char* s, size_t len);
+void csplice_string_set_cstring_len(csplice_string_t *str, const char *s, size_t len);
 
 /**
  * @brief Frees a string.
- * @param[in] str String.
+ * @param[in,out] str String.
  */
 void csplice_string_free(csplice_string_t *str);
 
