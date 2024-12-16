@@ -416,13 +416,13 @@ int main(int argc, char *argv[])
     lua_pushlightuserdata(_G->L, argv);
 
 #ifdef NDEBUG
-    lua_call(_G->L, 2, 0);
-#else
     if (lua_pcall(_G->L, 2, 0, 1) != LUA_OK)
     {
         fprintf(stderr, "%s\n", lua_tostring(_G->L, -1));
         return EXIT_FAILURE;
     }
+#else
+    lua_call(_G->L, 2, 0);
 #endif
 
     return EXIT_SUCCESS;
