@@ -3,6 +3,7 @@
 
 #include <stddef.h>
 #include "str.h"
+#include "luaext.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -23,19 +24,18 @@ typedef enum code_node_type
     CODE_NODE_TYPE_FILE,
 
     /**
-     * @brief A text node.
-     * A text node contains text.
-     * A text node has no child nodes.
-     */
-    CODE_NODE_TYPE_TEXT,
-
-    /**
      * @brief A code node.
      * A code node contains code.
      * A code node has no child nodes.
      */
     CODE_NODE_TYPE_CODE,
 } code_node_type_t;
+
+typedef struct code_node_file
+{
+    csplice_string_t path;  /**< Path to file */
+    csplice_string_t data;  /**< File content */
+} code_node_file_t;
 
 /**
  * @brief Structure to represent a code node.
@@ -46,7 +46,10 @@ typedef struct code_node
     struct code_node **childs;   /**< Child nodes */
     size_t             child_sz; /**< Number of child nodes */
     code_node_type_t   type;     /**< Type of code node */
-    csplice_string_t   data;     /**< Data */
+
+    union {
+        code_node_file_t file;
+    } data;
 } code_node_t;
 
 /**
@@ -59,8 +62,9 @@ void code_node_delete(code_node_t *node);
  * @brief Append child nodes into \p parent.
  * @param[in] parent Parent node.
  * @param[in] path  Path to file.
+ * @return Always 0.
  */
-void code_node_append_file(code_node_t *parent, const char *path);
+int code_node_append_file(lua_State *L, code_node_t *parent, const char *path);
 
 #ifdef __cplusplus
 }

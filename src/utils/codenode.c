@@ -1,5 +1,6 @@
 #include <string.h>
 #include <stdlib.h>
+#include "function/__init__.h"
 #include "codenode.h"
 #include "defines.h"
 
@@ -44,30 +45,42 @@ void code_node_delete(code_node_t *node)
     }
 
     /* Release this node. */
-    csplice_string_free(&node->data);
+    if (node->type == CODE_NODE_TYPE_FILE)
+    {
+        csplice_string_free(&node->data.file.path);
+        csplice_string_free(&node->data.file.data);
+    }
     free(node);
 }
 
-void code_node_append_file(code_node_t* node, const char* path)
+int code_node_append_file(lua_State *L, code_node_t *node, const char *path)
 {
-    code_node_t* new_node = calloc(1, sizeof(code_node_t));
+    code_node_t *new_node = calloc(1, sizeof(code_node_t));
     if (new_node == NULL)
     {
-        abort();
+        return luaL_error(L, "out of memory.");
     }
 
     new_node->parent = node;
     new_node->child_sz = 0;
     new_node->childs = NULL;
     new_node->type = CODE_NODE_TYPE_FILE;
-    csplice_string_set_cstring(&new_node->data, path);
 
-    code_node_t** new_childs = realloc(node->childs, sizeof(code_node_t *) * (node->child_sz + 1));
+    code_node_t **new_childs = realloc(node->childs, sizeof(code_node_t *) * (node->child_sz + 1));
     if (new_childs == NULL)
     {
-        abort();
+        return luaL_error(L, "out of memory.");
     }
-
     node->childs = new_childs;
     node->childs[node->child_sz++] = new_node;
+
+    csplice_string_set_cstring(&new_node->data.file.path, path);
+
+    csplice_get_function(L, "readfile"); // sp+1
+    lua_pushstring(L, path);             // sp+2
+    lua_call(L, 1, 1);                   // sp+1
+    csplice_string_set_lstring(&new_node->data.file.data, L, -1);
+    lua_pop(L, 1); // sp+0
+
+    return 0;
 }
