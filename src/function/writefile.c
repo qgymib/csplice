@@ -28,5 +28,5 @@ static int _csplice_function_writefile(lua_State* L)
 }
 
 const csplice_function_t csplice_function_writefile = {
-"writefile", _csplice_function_writefile, ""
+"writefile", _csplice_function_writefile
 };

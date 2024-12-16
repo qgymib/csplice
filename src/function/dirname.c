@@ -27,9 +27,5 @@ static int _csplice_function_dirname(lua_State* L)
 }
 
 const csplice_function_t csplice_function_dirname = {
-"dirname", _csplice_function_dirname,
-"[SYNOPSIS]\n"
-"    string dirname(string path)\n"
-"[DESCRIPTION]\n"
-"    Returns the directory part of the path.\n"
+"dirname", _csplice_function_dirname
 };

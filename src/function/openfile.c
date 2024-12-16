@@ -136,9 +136,5 @@ static int _csplice_function_openfile(lua_State* L)
 }
 
 const csplice_function_t csplice_function_openfile = {
-"openfile", _csplice_function_openfile,
-"[SYNOPSIS]\n"
-"    file openfile(string path)\n"
-"[DESCRIPTION]\n"
-"    Opens a file.\n"
+"openfile", _csplice_function_openfile
 };

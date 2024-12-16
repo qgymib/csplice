@@ -59,9 +59,5 @@ static int _csplice_function_splitlines(lua_State* L)
 }
 
 const csplice_function_t csplice_function_splitlines = {
-"splitlines", _csplice_function_splitlines,
-"[SYNOPSIS]\n"
-"    string[] splitlines(string line)\n"
-"[DESCRIPTION]\n"
-"    Splits string into a list of lines. Empty line is not ignored.\n"
+"splitlines", _csplice_function_splitlines
 };
