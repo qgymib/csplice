@@ -79,10 +79,30 @@ error:
     return luaL_error(L, "Cannot read file: %s", lua_tostring(L, -1));
 }
 
+static int _write_file(lua_State* L)
+{
+    csplice_file_t* file = lua_touserdata(L, 1);
+    if (file->handle == NULL)
+    {
+        return luaL_error(L, "file is closed");
+    }
+
+    size_t data_sz = 0;
+    const char* data = luaL_checklstring(L, 2, &data_sz);
+
+    size_t write_sz = fwrite(data, 1, data_sz, file->handle);
+    if (write_sz != data_sz)
+    {
+        return luaL_error(L, "failed to write file");
+    }
+
+    return 0;
+}
+
 static int _csplice_function_openfile(lua_State* L)
 {
     const char* path = luaL_checkstring(L, 1);
-    const char* mode = luaL_optstring(L, 2, "r");
+    const char* mode = luaL_optstring(L, 2, "rb");
 
     csplice_file_t* file = lua_newuserdata(L, sizeof(csplice_file_t));
 
@@ -100,6 +120,7 @@ static int _csplice_function_openfile(lua_State* L)
     static const luaL_Reg s_file_method[] = {
         { "close",  _file_close },
         { "read",   _file_read },
+        { "write",  _write_file },
         { NULL,     NULL },
     };
     if (luaL_newmetatable(L, "__csplice_file") != 0)

@@ -6,6 +6,7 @@ static const csplice_function_t* s_function_list[] = {
     &csplice_function_openfile,
     &csplice_function_readfile,
     &csplice_function_splitlines,
+    &csplice_function_writefile,
 };
 
 int csplice_openlibs(lua_State* L)

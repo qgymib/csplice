@@ -258,6 +258,45 @@ static void _build_target_node(lua_State *L, code_node_t *node)
     }
 }
 
+static int _append_node(lua_State* L, int idx, code_node_t* node)
+{
+    if (node->type == CODE_NODE_TYPE_VIRT)
+    {
+        size_t i;
+        for (i = 0; i < node->child_sz; i++)
+        {
+            _append_node(L, idx, node->childs[i]);
+        }
+        return 0;
+    }
+
+    if (node->type == CODE_NODE_TYPE_TEXT)
+    {
+        lua_pushvalue(L, idx);              // sp+1
+        lua_pushstring(L, "\n");            // sp+2
+        lua_pushstring(L, node->data.str);  // sp+3
+        lua_concat(L, 3);                   // sp+1
+        lua_replace(L, idx);
+    }
+
+    return 0;
+}
+
+static void _output_file(lua_State *L, code_node_t* node, const char* path)
+{
+    int sp = lua_gettop(L);
+    lua_pushstring(L, "");  // sp+1, this is where we store the result.
+
+    _append_node(L, sp + 1, node);
+
+    csplice_get_function(L, "writefile");
+    lua_pushstring(L, path);
+    lua_pushvalue(L, sp + 1);
+    lua_call(L, 2, 0);
+
+    lua_settop(L, sp);
+}
+
 /**
  * @brief Application entry point.
  * @param[in] L Lua VM.
@@ -282,6 +321,11 @@ static int _pmain(lua_State *L)
         cJSON_Delete(json);
         printf("%s\n", info);
         cJSON_free(info);
+    }
+
+    if (_G->ofile != NULL)
+    {
+        _output_file(L, _G->root, _G->ofile);
     }
 
     return 0;

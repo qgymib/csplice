@@ -24,6 +24,7 @@ extern const csplice_function_t csplice_function_dirname;
 extern const csplice_function_t csplice_function_openfile;
 extern const csplice_function_t csplice_function_readfile;
 extern const csplice_function_t csplice_function_splitlines;
+extern const csplice_function_t csplice_function_writefile;
 /**
  * @}
  */
