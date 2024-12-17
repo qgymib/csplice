@@ -14,6 +14,56 @@ typedef struct csplice_file_impl
 
 #if defined(_WIN32)
 
+#include <windows.h>
+
+static void _csplice_openfile_close(struct csplice_file *thiz)
+{
+    csplice_file_impl_t *impl = container_of(thiz, csplice_file_impl_t, basis);
+    if ((HANDLE)impl->handle != INVALID_HANDLE_VALUE)
+    {
+        CloseHandle((HANDLE)impl->handle);
+        impl->handle = (intptr_t)INVALID_HANDLE_VALUE;
+    }
+}
+
+static int64_t _csplice_openfile_read(struct csplice_file* thiz, void* buff, size_t size)
+{
+    csplice_file_impl_t *impl = container_of(thiz, csplice_file_impl_t, basis);
+    if ((HANDLE)impl->handle == INVALID_HANDLE_VALUE)
+    {
+        return -EINVAL;
+    }
+
+    DWORD read_sz = 0;
+    if (ReadFile((HANDLE)impl->handle, buff, (DWORD)size, &read_sz, NULL))
+    {
+        return read_sz;
+    }
+
+    return -EPIPE;
+}
+
+static int64_t _csplice_openfile_write(struct csplice_file* thiz, const void* buff, size_t size)
+{
+    csplice_file_impl_t *impl = container_of(thiz, csplice_file_impl_t, basis);
+    if ((HANDLE)impl->handle == INVALID_HANDLE_VALUE)
+    {
+        return -EINVAL;
+    }
+
+    DWORD write_sz = 0;
+    if (WriteFile((HANDLE)impl->handle, buff, (DWORD)size, &write_sz, NULL))
+    {
+        return write_sz;
+    }
+    return -EPIPE;
+}
+
+static int _fopen_s(intptr_t* h, const char* path, const char* mode)
+{
+
+}
+
 #else
 
 #include <unistd.h>
@@ -57,7 +107,7 @@ static int64_t _csplice_openfile_write(struct csplice_file *thiz, const void *bu
     return write_sz;
 }
 
-static intptr_t _fopen_s(const char *path, const char *mode)
+static int _fopen_s(intptr_t* h, const char *path, const char *mode)
 {
     static const open_mode_map_t open_map[] = {
         { "r",  O_RDONLY                    },
@@ -88,7 +138,8 @@ open_file:
         return -errno;
     }
 
-    return ret;
+    *h = ret;
+    return 0;
 }
 
 #endif
@@ -109,11 +160,11 @@ int csplice_openfile(csplice_file_t **file, const char *path, const char *mode)
     impl->basis.read = _csplice_openfile_read;
     impl->basis.write = _csplice_openfile_write;
 
-    if ((impl->handle = _fopen_s(path, mode)) < 0)
+    int errcode;
+    if ((errcode = _fopen_s(&impl->handle, path, mode)) < 0)
     {
-        int err = impl->handle;
         free(impl);
-        return err;
+        return errcode;
     }
 
     *file = &impl->basis;

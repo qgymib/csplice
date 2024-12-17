@@ -137,7 +137,7 @@ void pass_tree_to_json(cJSON *dst, const pass_node_t *node)
     {
         cJSON *virt = cJSON_CreateArray();
         cJSON_AddItemToObject(dst, "virt", virt);
-        for (size_t i = 0; i < node->child_sz; i++)
+        for (i = 0; i < node->child_sz; i++)
         {
             pass_tree_to_json(virt, node->childs[i]);
         }

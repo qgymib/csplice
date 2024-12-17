@@ -191,7 +191,7 @@ static int _build_code_tree(lua_State *L)
     for (i = 0; i < node_sz; i++)
     {
         pass_node_t *node = pass_node_new();
-        pass_node_insert(_G->root, node, -1);
+        pass_node_insert(_G->root, node, (size_t)-1);
 
         cJSON *obj = cJSON_GetArrayItem(json, i);
         {

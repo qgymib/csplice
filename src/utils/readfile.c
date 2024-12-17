@@ -17,7 +17,7 @@ int csplice_readfile(csplice_string_t *str, const char *path)
         if (read_sz < 0)
         {
             file->release(file);
-            return read_sz;
+            return (int)read_sz;
         }
 
         if (read_sz == 0)

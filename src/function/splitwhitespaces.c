@@ -2,6 +2,23 @@
 #include <stdlib.h>
 #include "__init__.h"
 
+#if defined(_WIN32)
+static char *strtok_r(char * s, const char * sep, char ** p)
+{
+    if (!s && !(s = *p))
+        return NULL;
+    s += strspn(s, sep);
+    if (!*s)
+        return *p = 0;
+    *p = s + strcspn(s, sep);
+    if (**p)
+        *(*p)++ = 0;
+    else
+        *p = 0;
+    return s;
+}
+#endif
+
 static int _csplice_function_splitwhitespaces(lua_State* L)
 {
     const char* raw = luaL_checkstring(L, 1);
