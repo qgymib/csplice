@@ -12,9 +12,14 @@ extern "C" {
  */
 typedef struct csplice_string
 {
-    char  *str; /**< The string */
-    size_t len; /**< The length of the string */
+    char  *str; /**< The string. The last character is always '\0'. */
+    size_t len; /**< The length of the string. */
 } csplice_string_t;
+
+/**
+ * @brief Static initializer for #csplice_string_t.
+ */
+#define CSPLICE_STRING_INIT { NULL, 0 }
 
 /**
  * @brief Converts a lua string to a C string.
@@ -38,6 +43,14 @@ void csplice_string_set_cstring(csplice_string_t *str, const char *s);
  * @param[in] len Length of the C string.
  */
 void csplice_string_set_cstring_len(csplice_string_t *str, const char *s, size_t len);
+
+/**
+ * @brief Appends a C string to a string.
+ * @param[out] str String.
+ * @param[in] s C string.
+ * @param[in] len Length of the C string.
+ */
+void csplice_string_append(csplice_string_t *str, const char *s, size_t len);
 
 /**
  * @brief Frees a string.

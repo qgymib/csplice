@@ -49,7 +49,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "function/__init__.h"
-#include "utils/splicetree.h"
+#include "pass/__init__.h"
 #include "utils/defines.h"
 
 /**
@@ -66,7 +66,7 @@ typedef struct csplice_ctx
     char *ofile; /**< Output file. */
     int   dump;  /**< Dump code tree. */
 
-    splice_node_t *root; /**< Root node of code tree. */
+    pass_node_t *root; /**< Root node of code tree. */
 } csplice_ctx_t;
 
 /**
@@ -198,7 +198,9 @@ static int _build_code_tree(lua_State *L)
         }
 
         const char *v_file = cJSON_GetStringValue(j_file);
-        splice_node_append_file(L, _G->root, v_file);
+        pass_node_t* node = pass_node_new();
+        pass_node_set_file(node, v_file);
+        pass_node_insert(_G->root, node, -1);
     }
 
     /* Restore stack. */
@@ -206,10 +208,10 @@ static int _build_code_tree(lua_State *L)
     return 0;
 }
 
-static void _build_target_node(lua_State *L, splice_node_t *node)
+static void _build_target_node(lua_State *L, pass_node_t *node)
 {
     size_t i;
-    if (node->type == SPLICE_NODE_TYPE_VIRT)
+    if (node->type == PASS_NODE_TYPE_VIRT)
     {
         for (i = 0; i < node->child_sz; i++)
         {
@@ -219,9 +221,9 @@ static void _build_target_node(lua_State *L, splice_node_t *node)
     }
 }
 
-static int _splice_tree_finialize_append_node(lua_State *L, int idx, splice_node_t *node)
+static int _splice_tree_finialize_append_node(lua_State *L, int idx, pass_node_t *node)
 {
-    if (node->type == SPLICE_NODE_TYPE_VIRT)
+    if (node->type == PASS_NODE_TYPE_VIRT)
     {
         size_t i;
         for (i = 0; i < node->child_sz; i++)
@@ -231,7 +233,7 @@ static int _splice_tree_finialize_append_node(lua_State *L, int idx, splice_node
         return 0;
     }
 
-    if (node->type == SPLICE_NODE_TYPE_FILE)
+    if (node->type == PASS_NODE_TYPE_FILE)
     {
         lua_pushvalue(L, idx);
         lua_pushfstring(L,
@@ -250,7 +252,7 @@ static int _splice_tree_finialize_append_node(lua_State *L, int idx, splice_node
     return 0;
 }
 
-static void _splice_tree_finialize(lua_State *L, splice_node_t *node, const char *path)
+static void _splice_tree_finialize(lua_State *L, pass_node_t *node, const char *path)
 {
     int sp = lua_gettop(L);
     lua_pushstring(
@@ -292,7 +294,7 @@ static int _pmain(lua_State *L)
     if (_G->dump)
     {
         cJSON *json = cJSON_CreateObject();
-        splice_node_to_json(json, _G->root);
+        pass_tree_to_json(json, _G->root);
         char *info = cJSON_Print(json);
         cJSON_Delete(json);
         printf("%s\n", info);
@@ -357,7 +359,7 @@ static void _at_exit(void)
     }
     if (_G->root != NULL)
     {
-        splice_node_delete(_G->root);
+        pass_tree_delete(_G->root);
         _G->root = NULL;
     }
 
@@ -375,7 +377,7 @@ int main(int argc, char *argv[])
         return EXIT_FAILURE;
     }
 
-    if ((_G->root = calloc(1, sizeof(splice_node_t))) == NULL)
+    if ((_G->root = calloc(1, sizeof(pass_node_t))) == NULL)
     {
         fprintf(stderr, "out of memory.\n");
         return EXIT_FAILURE;

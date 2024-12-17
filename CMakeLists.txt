@@ -25,9 +25,11 @@ add_executable(${PROJECT_NAME}
     "src/function/readfile.c"
     "src/function/splitlines.c"
     "src/function/writefile.c"
+    "src/pass/__init__.c"
     "src/utils/log.c"
     "src/utils/luaext.c"
-    "src/utils/splicetree.c"
+    "src/utils/openfile.c"
+    "src/utils/readfile.c"
     "src/utils/str.c"
     "src/main.c"
 )

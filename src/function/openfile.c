@@ -1,71 +1,58 @@
 #include "utils/str.h"
+#include "utils/openfile.h"
+#include "utils/defines.h"
 #include "__init__.h"
 
-typedef struct csplice_file
+typedef struct csplice_lfile
 {
-    FILE* handle;   /**< The file handle. */
-} csplice_file_t;
+    csplice_file_t *handle; /**< The file handle. */
+} csplice_lfile_t;
 
-#if !defined(_WIN32)
-
-#include <errno.h>
-
-static int fopen_s(FILE** ppFile, const char* filename, const char* mode)
+static int _file_close(lua_State *L)
 {
-    if ((*ppFile = fopen(filename, mode)) == NULL)
-    {
-        return errno;
-    }
-    return 0;
-}
-
-#endif
-
-static int _file_close(lua_State* L)
-{
-    csplice_file_t* file = lua_touserdata(L, 1);
+    csplice_lfile_t *file = lua_touserdata(L, 1);
     if (file->handle != NULL)
     {
-        fclose(file->handle);
+        file->handle->close(file->handle);
         file->handle = NULL;
     }
     return 0;
 }
 
-static int _file_gc(lua_State* L)
+static int _file_gc(lua_State *L)
 {
     return _file_close(L);
 }
 
-static int _file_read(lua_State* L)
+static int _file_read(lua_State *L)
 {
-    csplice_file_t* file = lua_touserdata(L, 1);
+    csplice_lfile_t *file = lua_touserdata(L, 1);
     if (file->handle == NULL)
     {
         return luaL_error(L, "file is closed");
     }
 
-    int errcode = 0;
+    int         errcode = 0;
     lua_Integer size = luaL_optinteger(L, 2, -1);
 
+    char        data[256];
     luaL_Buffer buf;
     luaL_buffinit(L, &buf);
 
     size_t total_read_sz = 0;
-    while (!feof(file->handle))
+    while (1)
     {
-        if ((errcode = ferror(file->handle)) != 0)
-        {
+        size_t  remain_read_sz = size < 0 ? sizeof(data) : min(sizeof(data), size - total_read_sz);
+        int64_t read_sz = file->handle->read(file->handle, data, remain_read_sz);
+        if (read_sz < 0)
+        { /* error */
             goto error;
         }
 
-        if (size > 0 && total_read_sz >= (size_t)size)
-        {
+        if (read_sz == 0)
+        { /* end of file. */
             break;
         }
-
-        char data[256];
-        size_t read_sz = fread(data, 1, sizeof(data), file->handle);
 
         luaL_addlstring(&buf, data, read_sz);
         total_read_sz += read_sz;
@@ -79,19 +66,19 @@ error:
     return luaL_error(L, "Cannot read file: %s", lua_tostring(L, -1));
 }
 
-static int _write_file(lua_State* L)
+static int _write_file(lua_State *L)
 {
-    csplice_file_t* file = lua_touserdata(L, 1);
+    csplice_lfile_t *file = lua_touserdata(L, 1);
     if (file->handle == NULL)
     {
         return luaL_error(L, "file is closed");
     }
 
-    size_t data_sz = 0;
-    const char* data = luaL_checklstring(L, 2, &data_sz);
+    size_t      data_sz = 0;
+    const char *data = luaL_checklstring(L, 2, &data_sz);
 
-    size_t write_sz = fwrite(data, 1, data_sz, file->handle);
-    if (write_sz != data_sz)
+    int64_t write_sz = file->handle->write(file->handle, data, data_sz);
+    if (write_sz != (int64_t)data_sz)
     {
         return luaL_error(L, "failed to write file");
     }
@@ -99,29 +86,29 @@ static int _write_file(lua_State* L)
     return 0;
 }
 
-static int _csplice_function_openfile(lua_State* L)
+static int _csplice_function_openfile(lua_State *L)
 {
-    const char* path = luaL_checkstring(L, 1);
-    const char* mode = luaL_optstring(L, 2, "rb");
+    const char *path = luaL_checkstring(L, 1);
+    const char *mode = luaL_optstring(L, 2, "r");
 
-    csplice_file_t* file = lua_newuserdata(L, sizeof(csplice_file_t));
+    csplice_lfile_t *file = lua_newuserdata(L, sizeof(csplice_file_t));
 
-    int errcode = fopen_s(&file->handle, path, mode);
+    int errcode = csplice_openfile(&file->handle, path, mode);
     if (errcode != 0)
     {
-        csplice_lua_strerror(L, errcode);
+        csplice_lua_strerror(L, -errcode);
         return luaL_error(L, "failed to open file: %s: %s", path, lua_tostring(L, -1));
     }
 
     static const luaL_Reg s_file_meta[] = {
-        { "__gc",   _file_gc },
-        { NULL,     NULL },
+        { "__gc", _file_gc },
+        { NULL,   NULL     },
     };
     static const luaL_Reg s_file_method[] = {
-        { "close",  _file_close },
-        { "read",   _file_read },
-        { "write",  _write_file },
-        { NULL,     NULL },
+        { "close", _file_close },
+        { "read",  _file_read  },
+        { "write", _write_file },
+        { NULL,    NULL        },
     };
     if (luaL_newmetatable(L, "__csplice_file") != 0)
     {
@@ -135,6 +122,4 @@ static int _csplice_function_openfile(lua_State* L)
     return 1;
 }
 
-const csplice_function_t csplice_function_openfile = {
-"openfile", _csplice_function_openfile
-};
+const csplice_function_t csplice_function_openfile = { "openfile", _csplice_function_openfile };

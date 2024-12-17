@@ -1,10 +1,11 @@
 #ifndef __CSPICE_FUNCTION_INIT_H__
 #define __CSPICE_FUNCTION_INIT_H__
+
+#include "utils/luaext.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#include "utils/luaext.h"
 
 /**
  * @brief Function information.
@@ -77,7 +78,7 @@ extern const csplice_function_t csplice_function_dirname;
  * Open a file. By default, the file is opened in `rb` mode.
  * 
  * The open mode allow following options:
- * + `r`: Open text file for reading. The stream is positioned at the beginning
+ * + `r`: Open file for reading. The stream is positioned at the beginning
  *   of the file.
  * + `r+`: Open for reading and writing. The stream is positioned at the beginning
  *   of the file.
@@ -90,9 +91,7 @@ extern const csplice_function_t csplice_function_dirname;
  * + `a+`: Open for reading and appending (writing at end of file). The file is
  *   created if it does not exist. Output is always appended to the end of the file.
  * 
- * The mode string can also include the letter 'b' either as a last character or
- * as a character between the characters in any of the two-character strings
- * described above.
+ * The file always open in binary mode.
  * 
  * The returned object has following methods:
  * + `close()`: Close the file.

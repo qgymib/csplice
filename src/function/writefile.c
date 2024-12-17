@@ -9,7 +9,7 @@ static int _csplice_function_writefile(lua_State* L)
     /* Create a file object on top of stack, at SP+1. */
     csplice_get_function(L, "openfile");                    // sp+1
     lua_pushvalue(L, 1);                                    // sp+2
-    lua_pushstring(L, "wb");                                // sp+3
+    lua_pushstring(L, "w+");                                // sp+3
     lua_call(L, 2, 1);                                      // sp+1
 
     /* Call file:write(). */
