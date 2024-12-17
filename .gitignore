@@ -8,3 +8,7 @@
 
 # Visual studio code files
 /.vscode
+
+# Visual studio
+/.vs
+/out
