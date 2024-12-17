@@ -80,6 +80,32 @@ int pass_node_set_file(pass_node_t *node, const char *path)
     return csplice_readfile(&node->data.file.data, path);
 }
 
+void pass_node_file_append_search_path(pass_node_t* node, const char* path, int iquote)
+{
+    csplice_string_t** p_i = &node->data.file.isystem;
+    size_t* p_s = &node->data.file.isystem_sz;
+    if (iquote)
+    {
+        p_i = &node->data.file.iquote;
+        p_s = &node->data.file.iquote_sz;
+    }
+
+    size_t old_sz = *p_s;
+    size_t new_sz = old_sz + 1;
+    csplice_string_t* new_arr = realloc(*p_i, sizeof(csplice_string_t) * new_sz);
+    if (new_arr == NULL)
+    {
+        abort();
+    }
+    *p_i = new_arr;
+    
+    new_arr[old_sz].str = NULL;
+    new_arr[old_sz].len = 0;
+
+    csplice_string_set_cstring(&new_arr[old_sz], path);
+    *p_s = new_sz;
+}
+
 void pass_node_insert(pass_node_t* parent, pass_node_t* child, size_t pos)
 {
     pass_node_t **new_childs = realloc(parent->childs, sizeof(pass_node_t *) * (parent->child_sz + 1));
@@ -106,6 +132,7 @@ void pass_node_insert(pass_node_t* parent, pass_node_t* child, size_t pos)
 
 void pass_tree_to_json(cJSON *dst, const pass_node_t *node)
 {
+    size_t i;
     if (node->type == PASS_NODE_TYPE_VIRT)
     {
         cJSON *virt = cJSON_CreateArray();
@@ -120,8 +147,23 @@ void pass_tree_to_json(cJSON *dst, const pass_node_t *node)
     cJSON *obj = cJSON_CreateObject();
     if (node->type == PASS_NODE_TYPE_FILE)
     {
+        cJSON_AddStringToObject(obj, "type", "file");
         cJSON_AddStringToObject(obj, "data", node->data.file.data.str);
         cJSON_AddStringToObject(obj, "path", node->data.file.path.str);
+
+        cJSON* arr = cJSON_CreateArray();
+        for (i = 0; i < node->data.file.iquote_sz; i++)
+        {
+            cJSON_AddItemToArray(arr, cJSON_CreateString(node->data.file.iquote[i].str));
+        }
+        cJSON_AddItemToObject(obj, "iquote", arr);
+
+        arr = cJSON_CreateArray();
+        for (i = 0; i < node->data.file.isystem_sz; i++)
+        {
+            cJSON_AddItemToArray(arr, cJSON_CreateString(node->data.file.isystem[i].str));
+        }
+        cJSON_AddItemToObject(obj, "isystem", arr);
     }
     cJSON_AddItemToArray(dst, obj);
 }

@@ -24,6 +24,7 @@ add_executable(${PROJECT_NAME}
     "src/function/openfile.c"
     "src/function/readfile.c"
     "src/function/splitlines.c"
+    "src/function/splitwhitespaces.c"
     "src/function/writefile.c"
     "src/pass/__init__.c"
     "src/utils/log.c"

@@ -190,17 +190,41 @@ static int _build_code_tree(lua_State *L)
     int node_sz = cJSON_GetArraySize(json);
     for (i = 0; i < node_sz; i++)
     {
-        cJSON *obj = cJSON_GetArrayItem(json, i);
-        cJSON *j_file = cJSON_GetObjectItem(obj, "file");
-        if (j_file == NULL)
-        {
-            return luaL_error(L, "compile_commands.json is not valid.");
-        }
-
-        const char *v_file = cJSON_GetStringValue(j_file);
-        pass_node_t* node = pass_node_new();
-        pass_node_set_file(node, v_file);
+        pass_node_t *node = pass_node_new();
         pass_node_insert(_G->root, node, -1);
+
+        cJSON *obj = cJSON_GetArrayItem(json, i);
+        {
+            cJSON *j_file = cJSON_GetObjectItem(obj, "file");
+            if (j_file == NULL)
+            {
+                return luaL_error(L, "compile_commands.json is not valid.");
+            }
+            const char *path = cJSON_GetStringValue(j_file);
+            pass_node_set_file(node, path);
+        }
+        {
+            cJSON *j_cmd = cJSON_GetObjectItem(obj, "command");
+            if (j_cmd != NULL)
+            {
+                csplice_get_function(L, "splitwhitespaces"); // sp+3
+                lua_pushstring(L, cJSON_GetStringValue(j_cmd)); // sp+4
+                lua_call(L, 1, 1); // sp+3
+
+                lua_pushnil(L); // sp+4
+                while (lua_next(L, sp+3))
+                {/* key:sp+3, val:sp+4 */
+                    const char* val = lua_tostring(L, sp+4);
+                    if (strncmp(val, "-I", 2) == 0)
+                    {
+                        pass_node_file_append_search_path(node, val+2, 0);
+                    }
+                    lua_pop(L, 1);
+                }
+
+                lua_pop(L, 1);
+            }
+        }
     }
 
     /* Restore stack. */

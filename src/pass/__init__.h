@@ -31,6 +31,12 @@ typedef enum passs_node_type
  */
 typedef struct pass_node_file
 {
+    csplice_string_t *iquote; /**< Search pathes. Apply to #include "file". */
+    size_t            iquote_sz;
+
+    csplice_string_t *isystem; /**< Search pathes. Apply to #include "file" and #include <file>. */
+    size_t            isystem_sz;
+
     csplice_string_t path; /**< Path to file */
     csplice_string_t data; /**< File content */
 } pass_node_file_t;
@@ -63,6 +69,14 @@ pass_node_t *pass_node_new(void);
  * @return 0 if success.
  */
 int pass_node_set_file(pass_node_t *node, const char *path);
+
+/**
+ * @brief Append search path to file node.
+ * @param[in] node File node.
+ * @param[in] path Search path.
+ * @param[in] iquote If true, apply to #include "file".
+ */
+void pass_node_file_append_search_path(pass_node_t* node, const char* path, int iquote);
 
 /**
  * @brief Link a child node to a parent node.

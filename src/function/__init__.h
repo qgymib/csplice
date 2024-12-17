@@ -153,6 +153,28 @@ extern const csplice_function_t csplice_function_splitlines;
  */
 
 /**
+ * @defgroup CSPLICE_FUNCTION_SPLITWHITESPACE splitwhitespace()
+ * 
+ * @section SYNOPSIS
+ * 
+ * \code
+ * string[] splitwhitespace(string s)
+ * \endcode
+ * 
+ * @section DESCRIPTION
+ * 
+ * Splits string into a list of words.
+ * 
+ * @{
+ * @cond
+ */
+extern const csplice_function_t csplice_function_splitwhitespaces;
+/**
+ * @endcond
+ * @}
+ */
+
+/**
  * @defgroup CSPLICE_FUNCTION_WRITEFILE writefile()
  * 
  * @section SYNOPSIS
