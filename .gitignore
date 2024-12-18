@@ -12,3 +12,7 @@
 # Visual studio
 /.vs
 /out
+
+# JetBrains
+/.idea
+/cmake-build-debug
