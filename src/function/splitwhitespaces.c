@@ -42,6 +42,6 @@ static int _csplice_function_splitwhitespaces(lua_State* L)
     return 1;
 }
 
-const csplice_function_t csplice_function_splitwhitespaces = {
+const csplice_function_t csplice_lfunc_splitwhitespaces = {
 "splitwhitespaces", _csplice_function_splitwhitespaces
 };

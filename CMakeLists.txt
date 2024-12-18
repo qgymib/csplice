@@ -19,6 +19,7 @@ endfunction()
 ###############################################################################
 
 add_executable(${PROJECT_NAME}
+    "src/builder/json_compilation_database.c"
     "src/function/__init__.c"
     "src/function/dirname.c"
     "src/function/openfile.c"
@@ -27,6 +28,7 @@ add_executable(${PROJECT_NAME}
     "src/function/splitwhitespaces.c"
     "src/function/writefile.c"
     "src/pass/__init__.c"
+    "src/utils/json.c"
     "src/utils/log.c"
     "src/utils/luaext.c"
     "src/utils/openfile.c"

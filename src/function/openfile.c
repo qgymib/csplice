@@ -122,4 +122,4 @@ static int _csplice_function_openfile(lua_State *L)
     return 1;
 }
 
-const csplice_function_t csplice_function_openfile = { "openfile", _csplice_function_openfile };
+const csplice_function_t csplice_lfunc_openfile = { "openfile", _csplice_function_openfile };

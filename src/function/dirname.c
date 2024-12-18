@@ -26,6 +26,6 @@ static int _csplice_function_dirname(lua_State* L)
     return 1;
 }
 
-const csplice_function_t csplice_function_dirname = {
+const csplice_function_t csplice_lfunc_dirname = {
 "dirname", _csplice_function_dirname
 };

@@ -98,7 +98,7 @@ void pass_node_file_append_search_path(pass_node_t* node, const char* path, int 
         abort();
     }
     *p_i = new_arr;
-    
+
     new_arr[old_sz].str = NULL;
     new_arr[old_sz].len = 0;
 

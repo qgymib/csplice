@@ -58,6 +58,6 @@ static int _csplice_function_splitlines(lua_State* L)
     return 1;
 }
 
-const csplice_function_t csplice_function_splitlines = {
+const csplice_function_t csplice_lfunc_splitlines = {
 "splitlines", _csplice_function_splitlines
 };

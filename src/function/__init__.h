@@ -58,7 +58,7 @@ int csplice_get_function(lua_State* L, const char* name);
  * @{
  * @cond
  */
-extern const csplice_function_t csplice_function_dirname;
+extern const csplice_function_t csplice_lfunc_dirname;
 /**
  * @endcond
  * @}
@@ -102,7 +102,7 @@ extern const csplice_function_t csplice_function_dirname;
  * @{
  * @cond
  */
-extern const csplice_function_t csplice_function_openfile;
+extern const csplice_function_t csplice_lfunc_openfile;
 /**
  * @endcond
  * @}
@@ -124,7 +124,7 @@ extern const csplice_function_t csplice_function_openfile;
  * @{
  * @cond
  */
-extern const csplice_function_t csplice_function_readfile;
+extern const csplice_function_t csplice_lfunc_readfile;
 /**
  * @endcond
  * @}
@@ -146,7 +146,7 @@ extern const csplice_function_t csplice_function_readfile;
  * @{
  * @cond
  */
-extern const csplice_function_t csplice_function_splitlines;
+extern const csplice_function_t csplice_lfunc_splitlines;
 /**
  * @endcond
  * @}
@@ -168,7 +168,7 @@ extern const csplice_function_t csplice_function_splitlines;
  * @{
  * @cond
  */
-extern const csplice_function_t csplice_function_splitwhitespaces;
+extern const csplice_function_t csplice_lfunc_splitwhitespaces;
 /**
  * @endcond
  * @}
@@ -190,7 +190,7 @@ extern const csplice_function_t csplice_function_splitwhitespaces;
  * @{
  * @cond
  */
-extern const csplice_function_t csplice_function_writefile;
+extern const csplice_function_t csplice_lfunc_writefile;
 /**
  * @endcond
  * @}

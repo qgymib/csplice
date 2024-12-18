@@ -51,6 +51,7 @@
 #include "function/__init__.h"
 #include "pass/__init__.h"
 #include "utils/defines.h"
+#include "builder/json_compilation_database.h"
 
 /**
  * @brief Version string.
@@ -164,74 +165,6 @@ static void _process_argc(lua_State *L)
     }
 }
 
-static int _build_code_tree(lua_State *L)
-{
-    int sp = lua_gettop(L);
-
-    /* Read input file at sp+1. */
-    csplice_get_function(L, "readfile");
-    lua_pushstring(L, _G->ifile);
-    lua_call(L, 1, 1);
-
-    /* Parse input as json at sp+2. */
-    cJSON *json = cJSON_Parse(lua_tostring(L, -1));
-    if (json == NULL)
-    {
-        return luaL_error(L, "failed to parse input file.");
-    }
-    csplice_lua_host(L, json, (csplice_lua_gc_fn)cJSON_Delete);
-
-    if (json->type != cJSON_Array)
-    {
-        return luaL_error(L, "compile_commands.json is not an array.");
-    }
-
-    int i;
-    int node_sz = cJSON_GetArraySize(json);
-    for (i = 0; i < node_sz; i++)
-    {
-        pass_node_t *node = pass_node_new();
-        pass_node_insert(_G->root, node, (size_t)-1);
-
-        cJSON *obj = cJSON_GetArrayItem(json, i);
-        {
-            cJSON *j_file = cJSON_GetObjectItem(obj, "file");
-            if (j_file == NULL)
-            {
-                return luaL_error(L, "compile_commands.json is not valid.");
-            }
-            const char *path = cJSON_GetStringValue(j_file);
-            pass_node_set_file(node, path);
-        }
-        {
-            cJSON *j_cmd = cJSON_GetObjectItem(obj, "command");
-            if (j_cmd != NULL)
-            {
-                csplice_get_function(L, "splitwhitespaces"); // sp+3
-                lua_pushstring(L, cJSON_GetStringValue(j_cmd)); // sp+4
-                lua_call(L, 1, 1); // sp+3
-
-                lua_pushnil(L); // sp+4
-                while (lua_next(L, sp+3))
-                {/* key:sp+3, val:sp+4 */
-                    const char* val = lua_tostring(L, sp+4);
-                    if (strncmp(val, "-I", 2) == 0)
-                    {
-                        pass_node_file_append_search_path(node, val+2, 0);
-                    }
-                    lua_pop(L, 1);
-                }
-
-                lua_pop(L, 1);
-            }
-        }
-    }
-
-    /* Restore stack. */
-    lua_settop(L, sp);
-    return 0;
-}
-
 static void _build_target_node(lua_State *L, pass_node_t *node)
 {
     size_t i;
@@ -291,7 +224,7 @@ static void _splice_tree_finialize(lua_State *L, pass_node_t *node, const char *
 
     _splice_tree_finialize_append_node(L, sp + 1, node);
 
-    csplice_get_function(L, "writefile");
+    csplice_get_function(L, csplice_lfunc_writefile.name);
     lua_pushstring(L, path);
     lua_pushvalue(L, sp + 1);
     lua_call(L, 2, 0);
@@ -312,7 +245,7 @@ static int _pmain(lua_State *L)
     /* Process argc and argv. */
     _process_argc(L);
 
-    _build_code_tree(L);
+    csplice_build_tree_from_compilation_database(L, _G->ifile, _G->root);
     _build_target_node(L, _G->root);
 
     if (_G->dump)

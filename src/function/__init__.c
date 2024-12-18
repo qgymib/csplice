@@ -1,16 +1,18 @@
 #include "utils/defines.h"
 #include "__init__.h"
 
+// clang-format off
 static const csplice_function_t* s_function_list[] = {
-    &csplice_function_dirname,
-    &csplice_function_openfile,
-    &csplice_function_readfile,
-    &csplice_function_splitlines,
-    &csplice_function_splitwhitespaces,
-    &csplice_function_writefile,
+    &csplice_lfunc_dirname,
+    &csplice_lfunc_openfile,
+    &csplice_lfunc_readfile,
+    &csplice_lfunc_splitlines,
+    &csplice_lfunc_splitwhitespaces,
+    &csplice_lfunc_writefile,
 };
+// clang-format on
 
-int csplice_openlibs(lua_State* L)
+int csplice_openlibs(lua_State *L)
 {
     lua_newtable(L);
 
@@ -26,7 +28,7 @@ int csplice_openlibs(lua_State* L)
     return 0;
 }
 
-int csplice_get_function(lua_State* L, const char* name)
+int csplice_get_function(lua_State *L, const char *name)
 {
     int sp = lua_gettop(L);
 
@@ -36,14 +38,13 @@ int csplice_get_function(lua_State* L, const char* name)
         return luaL_error(L, "namespace %s is not a table.", CSPLICE_NAMESPACE);
     }
 
-    type = lua_getfield(L, sp + 1, name);   // sp+2
+    type = lua_getfield(L, sp + 1, name); // sp+2
     if (type != LUA_TFUNCTION)
     {
         return luaL_error(L, "`%s.%s` is not a function.", CSPLICE_NAMESPACE, name);
     }
 
-    lua_remove(L, sp + 1);                  // sp+1
+    lua_remove(L, sp + 1); // sp+1
 
     return 1;
 }
-

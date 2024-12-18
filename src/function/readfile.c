@@ -19,6 +19,6 @@ static int _csplice_function_readfile(lua_State* L)
     return 1;
 }
 
-const csplice_function_t csplice_function_readfile = {
+const csplice_function_t csplice_lfunc_readfile = {
 "readfile", _csplice_function_readfile
 };
